@@ -101,4 +101,3 @@ PowerPoint Presentation for business insights- [Analysis](https://docs.google.co
 
 The detailed presentation summarizing problem statement, methodology, results, and recommendations can be accessed here:
 
-👉 Google Drive Link to PPT
