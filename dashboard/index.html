@@ -1,0 +1,149 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RFM Segmentation Dashboard</title><style>
+/* Layout: study desk. A fixed list of modules on the left, one module open at a time, with answers hidden until asked for. */
+:root{--bg:#f1f5f7;--panel:#ffffff;--fg:#17242c;--muted:#566872;--line:#d3dee4;--accent:#0b6b73;--accent-soft:#dcedef;--say:#e9f3ea;--say-line:#3d7d4c;--trap:#fbf0dc;--trap-line:#a86b0a;--code:#172630;--code-fg:#dcebf0;--display:"Bricolage Grotesque","Trebuchet MS",sans-serif;--body:"IBM Plex Sans","Segoe UI",sans-serif;--mono:"IBM Plex Mono",Menlo,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10191f;--panel:#17232b;--fg:#e4edf1;--muted:#9db0ba;--line:#2c3c46;--accent:#5cc5ce;--accent-soft:#183c42;--say:#17301f;--say-line:#6dbb7f;--trap:#35290f;--trap-line:#e0a53f;--code:#0b1318;--code-fg:#dcebf0;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10191f;--panel:#17232b;--fg:#e4edf1;--muted:#9db0ba;--line:#2c3c46;--accent:#5cc5ce;--accent-soft:#183c42;--say:#17301f;--say-line:#6dbb7f;--trap:#35290f;--trap-line:#e0a53f;--code:#0b1318;--code-fg:#dcebf0;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:16px/1.6 var(--body)}
+.wrap{display:grid;grid-template-columns:260px minmax(0,1fr);gap:36px;max-width:1180px;margin:0 auto;padding-block:24px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+nav{position:sticky;top:calc(16px + env(safe-area-inset-top,0px));align-self:start;max-height:calc(100vh - 32px);overflow:auto}
+.brand{font:700 22px/1.15 var(--display);margin:0 0 4px}
+.count{color:var(--muted);font-size:13px;margin:0 0 8px}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:14px}
+.bar i{display:block;height:100%;width:0;background:var(--accent)}
+.navgroup{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:14px 0 4px}
+nav a{display:flex;justify-content:space-between;gap:8px;padding:5px 8px;border-radius:5px;color:var(--fg);text-decoration:none;font-size:14.5px}
+nav a:hover{background:var(--accent-soft)}
+nav a.on{background:var(--accent);color:var(--bg);font-weight:600}
+nav a.done::after{content:"✓"}
+main{min-width:0}
+section{margin-bottom:56px}
+h1{font:700 clamp(28px,5vw,40px)/1.1 var(--display);margin:0 0 10px;text-wrap:balance}
+h2{font:700 23px/1.2 var(--display);margin:34px 0 8px;text-wrap:balance}
+h3{font:600 16.5px/1.3 var(--body);margin:22px 0 4px}
+p{margin:0 0 12px;max-width:70ch}
+ul,ol{margin:0 0 12px;padding-left:22px;max-width:70ch}
+li{margin-bottom:5px}
+.lede{font-size:18px;color:var(--muted)}
+a{color:var(--accent)}
+.say{background:var(--say);border-left:3px solid var(--say-line);padding:12px 16px;margin:12px 0;max-width:74ch}
+.say p:last-child{margin-bottom:0}
+.say b.t,.trap b.t{display:block;font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px}
+.trap{background:var(--trap);border-left:3px solid var(--trap-line);padding:12px 16px;margin:12px 0;max-width:74ch}
+.trap ul{margin-bottom:0}
+.trap p:last-child{margin-bottom:0}
+details{background:var(--panel);border:1px solid var(--line);border-radius:6px;margin:8px 0;max-width:74ch}
+summary{cursor:pointer;padding:10px 14px;font-weight:500}
+summary:focus-visible,a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+details>div{padding:0 14px 12px;border-top:1px solid var(--line);padding-top:10px}
+details>div p:last-child{margin-bottom:0}
+pre{background:var(--code);color:var(--code-fg);padding:12px 14px;border-radius:6px;overflow-x:auto;font:13.5px/1.5 var(--mono);margin:10px 0;max-width:100%}
+code{font:.92em var(--mono);background:var(--accent-soft);padding:1px 4px;border-radius:3px}
+pre code{background:none;padding:0;font:inherit}
+.tbl{overflow-x:auto;margin:10px 0;max-width:100%}
+table{border-collapse:collapse;font-size:14.5px;min-width:380px}
+th,td{border-bottom:1px solid var(--line);padding:7px 12px 7px 0;text-align:left;vertical-align:top}
+th{font:500 12px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
+.fill{background:var(--trap);border:1px dashed var(--trap-line);padding:0 5px;border-radius:3px;font-size:.92em}
+.tag{display:inline-block;font:500 11px var(--mono);color:var(--accent);border:1px solid var(--accent);padding:0 6px;border-radius:3px;margin-right:6px}
+.foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:28px;border-top:1px solid var(--line);padding-top:16px}
+button{font:600 14px var(--body);background:var(--accent);color:var(--bg);border:0;padding:9px 14px;border-radius:5px;cursor:pointer}
+button.alt{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:12px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 14px;min-width:0}
+.card b{display:block}
+.card span{font-size:14.5px;color:var(--muted)}
+@media (max-width:820px){.wrap{grid-template-columns:minmax(0,1fr);gap:20px}nav{position:static;max-height:none}.navlist{display:flex;flex-wrap:wrap;gap:4px}.navgroup{width:100%}}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+.why{background:var(--accent-soft);border-color:var(--line)}
+.why summary{font-size:14.5px;color:var(--accent)}
+.why>div{padding:0 14px 10px}
+.why td code{white-space:pre-wrap;word-break:break-word;font-size:12.5px}
+.why td:first-child{width:42%}
+.fig{margin:14px 0;max-width:100%}.fig img{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:6px;background:#fff}.fig figcaption{font-size:13px;color:var(--muted);margin-top:4px}
+.dash{--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--heat:42,120,214;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;margin:12px 0}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .dash{--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--heat:57,135,229}}
+:root[data-theme="dark"] .dash{--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--heat:57,135,229}
+.dash h3{margin:0 0 6px;font-size:15px}.dash-t{font:700 19px var(--display);margin:0 0 10px}
+.slicers{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}.slicers span{font-size:12.5px;border:1px solid var(--line);border-radius:4px;padding:2px 8px;color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}.kpi{border:1px solid var(--line);border-radius:6px;padding:10px}.kpi b{display:block;font:700 clamp(18px,3.4vw,26px) var(--display)}.kpi span{font-size:12.5px;color:var(--muted)}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:18px}
+.dash svg{width:100%;height:auto;display:block;overflow:visible}.dash svg text{fill:var(--fg);font:12px var(--body)}.dash svg .m{fill:var(--muted)}
+.lg{display:flex;flex-wrap:wrap;gap:10px;font-size:12.5px;margin:0 0 6px}.lg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px}
+#sheet .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:0 28px}
+#sheet .theme{font-weight:600;border-left:3px solid var(--accent);padding:6px 12px;margin:0 0 8px}
+#sheet ol,#sheet ul{padding-left:20px}
+@media print{nav{display:none!important}main section:not(#sheet){display:none!important}#sheet{display:block!important}#sheet button{display:none}}
+#qbank ul.qb{list-style:none;padding-left:0}#qbank li{margin:4px 0}#qbank li span{color:var(--muted);font-size:.9em}#qbank li span.todo{color:var(--accent);font-weight:600}#qbank input{margin-right:6px}
+
+body{max-width:1100px;margin:0 auto;padding:24px 16px} h1{margin:0 0 6px} .sub{color:var(--muted,#666);margin:0 0 18px}</style></head>
+<body><h1>Customer Segmentation Dashboard (RFM)</h1>
+<p class="sub">Online retail transactions, Dec 2010 – Dec 2011 (UCI / Kaggle). 4,335 customers scored on Recency, Frequency and Monetary value into four segments. This page redraws the one-page Power BI report (<code>Ecommerce_Dashboard.pbix</code>) from the data stored inside it, so it opens in any browser. Hover a chart for values. Analysis: <a href="https://github.com/faizAfham/Customer-Segmentation-Using-RFM-Analysis-E-Commerce/blob/main/Ecommerce_Data_Analysis.ipynb">notebook</a> · <a href="https://github.com/faizAfham/Customer-Segmentation-Using-RFM-Analysis-E-Commerce">repo</a></p><div class="dash">
+<p class="dash-t">Customer Segmentation Dashboard (RFM Analysis)</p>
+<div class="slicers"><span>Country: All</span><span>Month: All</span><span>Quarter: All</span><span>Year: All</span></div>
+<div class="kpis"><div class="kpi"><b>£8.74M</b><span>Total sales</span></div><div class="kpi"><b>4,335</b><span>Active customers</span></div><div class="kpi"><b>5.16M</b><span>Sales volume (units)</span></div></div>
+<div class="dgrid">
+<div><h3>Revenue contributions by segment</h3><div class="lg"><span><i style="background:var(--s1)"></i>High Value</span><span><i style="background:var(--s2)"></i>Loyal</span><span><i style="background:var(--s3)"></i>At-Risk</span><span><i style="background:var(--s4)"></i>Dormant</span></div><svg viewBox="0 0 560 260" role="img" aria-label="Monthly revenue by segment. Revenue climbs to a peak of about 1.14 million pounds in November 2011."><line x1="46" x2="552" y1="234.0" y2="234.0" stroke="var(--line)"/><text class="m" x="40" y="238.0" text-anchor="end">£0.0M</text><line x1="46" x2="552" y1="159.3" y2="159.3" stroke="var(--line)"/><text class="m" x="40" y="163.3" text-anchor="end">£0.4M</text><line x1="46" x2="552" y1="84.7" y2="84.7" stroke="var(--line)"/><text class="m" x="40" y="88.7" text-anchor="end">£0.8M</text><line x1="46" x2="552" y1="10.0" y2="10.0" stroke="var(--line)"/><text class="m" x="40" y="14.0" text-anchor="end">£1.2M</text><polygon points="46.0,181.2 88.2,191.0 130.3,198.1 172.5,186.2 214.7,201.0 256.8,177.5 299.0,177.5 341.2,181.5 383.3,182.0 425.5,145.6 467.7,150.4 509.8,132.9 552.0,189.2 552.0,234.0 509.8,234.0 467.7,234.0 425.5,234.0 383.3,234.0 341.2,234.0 299.0,234.0 256.8,234.0 214.7,234.0 172.5,234.0 130.3,234.0 88.2,234.0 46.0,234.0" fill="var(--s1)" stroke="var(--panel)" stroke-width="1.5"><title>High Value: £4,005,786 in total</title></polygon><polygon points="46.0,161.2 88.2,173.6 130.3,180.4 172.5,162.9 214.7,184.9 256.8,152.0 299.0,153.4 341.2,159.2 383.3,151.9 425.5,112.5 467.7,116.0 509.8,67.2 552.0,178.9 552.0,189.2 509.8,132.9 467.7,150.4 425.5,145.6 383.3,182.0 341.2,181.5 299.0,177.5 256.8,177.5 214.7,201.0 172.5,186.2 130.3,198.1 88.2,191.0 46.0,181.2" fill="var(--s2)" stroke="var(--panel)" stroke-width="1.5"><title>Loyal: £1,822,097 in total</title></polygon><polygon points="46.0,130.7 88.2,147.4 130.3,155.1 172.5,129.2 214.7,152.4 256.8,116.9 299.0,112.8 341.2,123.6 383.3,115.4 425.5,58.8 467.7,46.9 509.8,21.8 552.0,138.4 552.0,178.9 509.8,67.2 467.7,116.0 425.5,112.5 383.3,151.9 341.2,159.2 299.0,153.4 256.8,152.0 214.7,184.9 172.5,162.9 130.3,180.4 88.2,173.6 46.0,161.2" fill="var(--s3)" stroke="var(--panel)" stroke-width="1.5"><title>At-Risk: £2,704,638 in total</title></polygon><polygon points="46.0,128.5 88.2,129.0 130.3,151.4 172.5,125.1 214.7,149.2 256.8,110.9 299.0,112.1 341.2,123.6 383.3,115.4 425.5,58.8 467.7,46.9 509.8,21.8 552.0,138.4 552.0,138.4 509.8,21.8 467.7,46.9 425.5,58.8 383.3,115.4 341.2,123.6 299.0,112.8 256.8,116.9 214.7,152.4 172.5,129.2 130.3,155.1 88.2,147.4 46.0,130.7" fill="var(--s4)" stroke="var(--panel)" stroke-width="1.5"><title>Dormant: £204,710 in total</title></polygon><text class="m" x="46.0" y="252" text-anchor="middle">Dec</text><text class="m" x="130.3" y="252" text-anchor="middle">Feb</text><text class="m" x="214.7" y="252" text-anchor="middle">Apr</text><text class="m" x="299.0" y="252" text-anchor="middle">Jun</text><text class="m" x="383.3" y="252" text-anchor="middle">Aug</text><text class="m" x="467.7" y="252" text-anchor="middle">Oct</text><text class="m" x="552.0" y="252" text-anchor="middle">Dec</text><rect x="26.0" y="10" width="40" height="224" fill="transparent"><title>2010-12: £565,199
+High Value: £282,971
+Loyal: £106,924
+At-Risk: £163,752
+Dormant: £11,552</title></rect><rect x="68.2" y="10" width="40" height="224" fill="transparent"><title>2011-01: £562,683
+High Value: £230,169
+Loyal: £93,600
+At-Risk: £140,367
+Dormant: £98,547</title></rect><rect x="110.3" y="10" width="40" height="224" fill="transparent"><title>2011-02: £442,294
+High Value: £192,186
+Loyal: £95,156
+At-Risk: £135,107
+Dormant: £19,845</title></rect><rect x="152.5" y="10" width="40" height="224" fill="transparent"><title>2011-03: £583,145
+High Value: £255,825
+Loyal: £125,060
+At-Risk: £180,539
+Dormant: £21,721</title></rect><rect x="194.7" y="10" width="40" height="224" fill="transparent"><title>2011-04: £454,441
+High Value: £176,575
+Loyal: £86,217
+At-Risk: £174,427
+Dormant: £17,222</title></rect><rect x="236.8" y="10" width="40" height="224" fill="transparent"><title>2011-05: £659,242
+High Value: £302,714
+Loyal: £136,810
+At-Risk: £188,016
+Dormant: £31,702</title></rect><rect x="279.0" y="10" width="40" height="224" fill="transparent"><title>2011-06: £653,265
+High Value: £302,492
+Loyal: £129,283
+At-Risk: £217,369
+Dormant: £4,121</title></rect><rect x="321.2" y="10" width="40" height="224" fill="transparent"><title>2011-07: £591,604
+High Value: £281,250
+Loyal: £119,630
+At-Risk: £190,724
+Dormant: £0</title></rect><rect x="363.3" y="10" width="40" height="224" fill="transparent"><title>2011-08: £635,515
+High Value: £278,480
+Loyal: £161,395
+At-Risk: £195,640
+Dormant: £0</title></rect><rect x="405.5" y="10" width="40" height="224" fill="transparent"><title>2011-09: £938,753
+High Value: £473,630
+Loyal: £177,050
+At-Risk: £288,073
+Dormant: £0</title></rect><rect x="447.7" y="10" width="40" height="224" fill="transparent"><title>2011-10: £1,002,327
+High Value: £447,953
+Loyal: £183,944
+At-Risk: £370,430
+Dormant: £0</title></rect><rect x="489.8" y="10" width="40" height="224" fill="transparent"><title>2011-11: £1,136,534
+High Value: £541,647
+Loyal: £351,672
+At-Risk: £243,215
+Dormant: £0</title></rect><rect x="532.0" y="10" width="40" height="224" fill="transparent"><title>2011-12: £512,229
+High Value: £239,894
+Loyal: £55,356
+At-Risk: £216,979
+Dormant: £0</title></rect></svg></div>
+<div><h3>Customers by segment</h3><svg viewBox="0 0 320 190" role="img" aria-label="Customers by segment: At-Risk 65 percent, Loyal 16, High Value 10, Dormant 8."><path d="M96.1,7.0 A88,88 0 0 1 146.9,23.9 L125.6,53.0 A52,52 0 0 0 95.6,43.0 Z" fill="var(--s1)"><title>High Value: 443 customers (10.2%)</title></path><path d="M148.5,25.2 A88,88 0 0 1 182.8,100.6 L146.9,98.3 A52,52 0 0 0 126.6,53.7 Z" fill="var(--s2)"><title>Loyal: 693 customers (16.0%)</title></path><path d="M182.7,102.7 A88,88 0 1 1 50.0,19.4 L68.4,50.3 A52,52 0 1 0 146.8,99.6 Z" fill="var(--s3)"><title>At-Risk: 2,837 customers (65.4%)</title></path><path d="M51.8,18.3 A88,88 0 0 1 93.9,7.0 L94.4,43.0 A52,52 0 0 0 69.5,49.7 Z" fill="var(--s4)"><title>Dormant: 362 customers (8.4%)</title></path><text x="95" y="93" text-anchor="middle" style="font-weight:600">4,335</text><text class="m" x="95" y="109" text-anchor="middle">customers</text><text x="205" y="42">High Value</text><text class="m" x="205" y="58">443 (10%)</text><text x="205" y="78">Loyal</text><text class="m" x="205" y="94">693 (16%)</text><text x="205" y="114">At-Risk</text><text class="m" x="205" y="130">2,837 (65%)</text><text x="205" y="150">Dormant</text><text class="m" x="205" y="166">362 (8%)</text></svg></div>
+<div><h3>RFM heatmap (sum of M score)</h3><svg viewBox="0 0 320 198" role="img" aria-label="Heatmap of recency by frequency, summing M score. The highest value, 2110, is at R5 F5."><rect x="40" y="144" width="52" height="32" rx="3" fill="rgba(var(--heat),0.24)"><title>R1, F1: sum of M score 626</title></rect><text x="66" y="164" text-anchor="middle">626</text><rect x="94" y="144" width="52" height="32" rx="3" fill="rgba(var(--heat),0.22)"><title>R1, F2: sum of M score 536</title></rect><text x="120" y="164" text-anchor="middle">536</text><rect x="148" y="144" width="52" height="32" rx="3" fill="rgba(var(--heat),0.16)"><title>R1, F3: sum of M score 352</title></rect><text x="174" y="164" text-anchor="middle">352</text><rect x="202" y="144" width="52" height="32" rx="3" fill="rgba(var(--heat),0.10)"><title>R1, F4: sum of M score 146</title></rect><text x="228" y="164" text-anchor="middle">146</text><rect x="256" y="144" width="52" height="32" rx="3" fill="rgba(var(--heat),0.08)"><title>R1, F5: sum of M score 52</title></rect><text x="282" y="164" text-anchor="middle">52</text><text class="m" x="30" y="164" text-anchor="end">R1</text><rect x="40" y="110" width="52" height="32" rx="3" fill="rgba(var(--heat),0.18)"><title>R2, F1: sum of M score 396</title></rect><text x="66" y="130" text-anchor="middle">396</text><rect x="94" y="110" width="52" height="32" rx="3" fill="rgba(var(--heat),0.18)"><title>R2, F2: sum of M score 425</title></rect><text x="120" y="130" text-anchor="middle">425</text><rect x="148" y="110" width="52" height="32" rx="3" fill="rgba(var(--heat),0.25)"><title>R2, F3: sum of M score 659</title></rect><text x="174" y="130" text-anchor="middle">659</text><rect x="202" y="110" width="52" height="32" rx="3" fill="rgba(var(--heat),0.23)"><title>R2, F4: sum of M score 592</title></rect><text x="228" y="130" text-anchor="middle">592</text><rect x="256" y="110" width="52" height="32" rx="3" fill="rgba(var(--heat),0.12)"><title>R2, F5: sum of M score 217</title></rect><text x="282" y="130" text-anchor="middle">217</text><text class="m" x="30" y="130" text-anchor="end">R2</text><rect x="40" y="76" width="52" height="32" rx="3" fill="rgba(var(--heat),0.15)"><title>R3, F1: sum of M score 319</title></rect><text x="66" y="96" text-anchor="middle">319</text><rect x="94" y="76" width="52" height="32" rx="3" fill="rgba(var(--heat),0.17)"><title>R3, F2: sum of M score 382</title></rect><text x="120" y="96" text-anchor="middle">382</text><rect x="148" y="76" width="52" height="32" rx="3" fill="rgba(var(--heat),0.22)"><title>R3, F3: sum of M score 543</title></rect><text x="174" y="96" text-anchor="middle">543</text><rect x="202" y="76" width="52" height="32" rx="3" fill="rgba(var(--heat),0.29)"><title>R3, F4: sum of M score 774</title></rect><text x="228" y="96" text-anchor="middle">774</text><rect x="256" y="76" width="52" height="32" rx="3" fill="rgba(var(--heat),0.22)"><title>R3, F5: sum of M score 543</title></rect><text x="282" y="96" text-anchor="middle">543</text><text class="m" x="30" y="96" text-anchor="end">R3</text><rect x="40" y="42" width="52" height="32" rx="3" fill="rgba(var(--heat),0.11)"><title>R4, F1: sum of M score 157</title></rect><text x="66" y="62" text-anchor="middle">157</text><rect x="94" y="42" width="52" height="32" rx="3" fill="rgba(var(--heat),0.14)"><title>R4, F2: sum of M score 257</title></rect><text x="120" y="62" text-anchor="middle">257</text><rect x="148" y="42" width="52" height="32" rx="3" fill="rgba(var(--heat),0.21)"><title>R4, F3: sum of M score 500</title></rect><text x="174" y="62" text-anchor="middle">500</text><rect x="202" y="42" width="52" height="32" rx="3" fill="rgba(var(--heat),0.33)"><title>R4, F4: sum of M score 931</title></rect><text x="228" y="62" text-anchor="middle">931</text><rect x="256" y="42" width="52" height="32" rx="3" fill="rgba(var(--heat),0.40)"><title>R4, F5: sum of M score 1142</title></rect><text x="282" y="62" text-anchor="middle">1142</text><text class="m" x="30" y="62" text-anchor="end">R4</text><rect x="40" y="8" width="52" height="32" rx="3" fill="rgba(var(--heat),0.08)"><title>R5, F1: sum of M score 73</title></rect><text x="66" y="28" text-anchor="middle">73</text><rect x="94" y="8" width="52" height="32" rx="3" fill="rgba(var(--heat),0.10)"><title>R5, F2: sum of M score 141</title></rect><text x="120" y="28" text-anchor="middle">141</text><rect x="148" y="8" width="52" height="32" rx="3" fill="rgba(var(--heat),0.17)"><title>R5, F3: sum of M score 381</title></rect><text x="174" y="28" text-anchor="middle">381</text><rect x="202" y="8" width="52" height="32" rx="3" fill="rgba(var(--heat),0.28)"><title>R5, F4: sum of M score 751</title></rect><text x="228" y="28" text-anchor="middle">751</text><rect x="256" y="8" width="52" height="32" rx="3" fill="rgba(var(--heat),0.68)"><title>R5, F5: sum of M score 2110</title></rect><text x="282" y="28" text-anchor="middle">2110</text><text class="m" x="30" y="28" text-anchor="end">R5</text><text class="m" x="66" y="192" text-anchor="middle">F1</text><text class="m" x="120" y="192" text-anchor="middle">F2</text><text class="m" x="174" y="192" text-anchor="middle">F3</text><text class="m" x="228" y="192" text-anchor="middle">F4</text><text class="m" x="282" y="192" text-anchor="middle">F5</text></svg></div>
+<div><h3>Revenue by day of week</h3><svg viewBox="0 0 320 182" role="img" aria-label="Revenue by weekday. Thursday is highest at 1.94 million pounds, Sunday lowest at 0.78 million. There are no Saturday sales."><path d="M16,160 V75.1 q0,-4 4,-4 H44 q4,0 4,4 V160 Z" fill="var(--s1)"><title>Mon: £1,326,500</title></path><text class="m" x="32" y="176" text-anchor="middle">Mon</text><path d="M64,160 V51.9 q0,-4 4,-4 H92 q4,0 4,4 V160 Z" fill="var(--s1)"><title>Tue: £1,672,493</title></path><text class="m" x="80" y="176" text-anchor="middle">Tue</text><path d="M112,160 V59.5 q0,-4 4,-4 H140 q4,0 4,4 V160 Z" fill="var(--s1)"><title>Wed: £1,559,469</title></path><text class="m" x="128" y="176" text-anchor="middle">Wed</text><path d="M160,160 V34.0 q0,-4 4,-4 H188 q4,0 4,4 V160 Z" fill="var(--s1)"><title>Thu: £1,939,229</title></path><text class="m" x="176" y="176" text-anchor="middle">Thu</text><text x="176" y="25.0" text-anchor="middle">£1.94M</text><path d="M208,160 V66.1 q0,-4 4,-4 H236 q4,0 4,4 V160 Z" fill="var(--s1)"><title>Fri: £1,459,797</title></path><text class="m" x="224" y="176" text-anchor="middle">Fri</text><path d="M256,160 V111.7 q0,-4 4,-4 H284 q4,0 4,4 V160 Z" fill="var(--s1)"><title>Sun: £779,739</title></path><text class="m" x="272" y="176" text-anchor="middle">Sun</text><text x="272" y="102.7" text-anchor="middle">£0.78M</text></svg></div>
+<div><h3>Active customers over time</h3><svg viewBox="0 0 560 194" role="img" aria-label="Active customers per month, rising to 1661 in November 2011, then 614 in the partial month of December."><line x1="40" x2="552" y1="170.0" y2="170.0" stroke="var(--line)"/><text class="m" x="34" y="174.0" text-anchor="end">0</text><line x1="40" x2="552" y1="120.0" y2="120.0" stroke="var(--line)"/><text class="m" x="34" y="124.0" text-anchor="end">600</text><line x1="40" x2="552" y1="70.0" y2="70.0" stroke="var(--line)"/><text class="m" x="34" y="74.0" text-anchor="end">1,200</text><line x1="40" x2="552" y1="20.0" y2="20.0" stroke="var(--line)"/><text class="m" x="34" y="24.0" text-anchor="end">1,800</text><polyline points="40.0,96.3 82.5,108.4 125.0,106.9 167.5,88.9 210.0,98.9 252.5,82.2 295.0,87.5 337.5,91.2 380.0,92.2 422.5,65.1 465.0,56.6 507.5,31.6 550.0,118.8" fill="none" stroke="var(--s1)" stroke-width="2"/><circle cx="40.0" cy="96.3" r="4" fill="var(--s1)" stroke="var(--panel)" stroke-width="2"><title>2010-12: 884 active customers</title></circle><circle cx="82.5" cy="108.4" r="4" fill="var(--s1)" stroke="var(--panel)" stroke-width="2"><title>2011-01: 739 active customers</title></circle><circle cx="125.0" cy="106.9" r="4" fill="var(--s1)" stroke="var(--panel)" stroke-width="2"><title>2011-02: 757 active customers</title></circle><circle cx="167.5" cy="88.9" r="4" fill="var(--s1)" stroke="var(--panel)" stroke-width="2"><title>2011-03: 973 active customers</title></circle><circle cx="210.0" cy="98.9" r="4" fill="var(--s1)" stroke="var(--panel)" stroke-width="2"><title>2011-04: 853 active customers</title></circle><circle cx="252.5" cy="82.2" r="4" fill="var(--s1)" stroke="var(--panel)" stroke-width="2"><title>2011-05: 1,054 active customers</title></circle><circle cx="295.0" cy="87.5" r="4" fill="var(--s1)" stroke="var(--panel)" stroke-width="2"><title>2011-06: 990 active customers</title></circle><circle cx="337.5" cy="91.2" r="4" fill="var(--s1)" stroke="var(--panel)" stroke-width="2"><title>2011-07: 946 active customers</title></circle><circle cx="380.0" cy="92.2" r="4" fill="var(--s1)" stroke="var(--panel)" stroke-width="2"><title>2011-08: 933 active customers</title></circle><circle cx="422.5" cy="65.1" r="4" fill="var(--s1)" stroke="var(--panel)" stroke-width="2"><title>2011-09: 1,259 active customers</title></circle><circle cx="465.0" cy="56.6" r="4" fill="var(--s1)" stroke="var(--panel)" stroke-width="2"><title>2011-10: 1,361 active customers</title></circle><circle cx="507.5" cy="31.6" r="4" fill="var(--s1)" stroke="var(--panel)" stroke-width="2"><title>2011-11: 1,661 active customers</title></circle><circle cx="550.0" cy="118.8" r="4" fill="var(--s1)" stroke="var(--panel)" stroke-width="2"><title>2011-12: 614 active customers</title></circle><text class="m" x="40.0" y="188" text-anchor="middle">Dec</text><text class="m" x="125.0" y="188" text-anchor="middle">Feb</text><text class="m" x="210.0" y="188" text-anchor="middle">Apr</text><text class="m" x="295.0" y="188" text-anchor="middle">Jun</text><text class="m" x="380.0" y="188" text-anchor="middle">Aug</text><text class="m" x="465.0" y="188" text-anchor="middle">Oct</text><text class="m" x="550.0" y="188" text-anchor="middle">Dec</text><text x="501.5" y="22.6" text-anchor="end">1,661 in Nov</text></svg></div>
+<div><h3>Top customers</h3><div class="tbl"><table><tr><th>Customer</th><th>Sales</th><th>Units</th></tr><tr><td>14646</td><td class="n">£279,138</td><td class="n">197,420</td></tr><tr><td>18102</td><td class="n">£259,657</td><td class="n">64,124</td></tr><tr><td>17450</td><td class="n">£194,391</td><td class="n">69,973</td></tr><tr><td>16446</td><td class="n">£168,473</td><td class="n">80,997</td></tr><tr><td>14911</td><td class="n">£136,162</td><td class="n">80,404</td></tr></table></div></div>
+</div>
+<details><summary>See the chart data as a table</summary><div><div class="tbl"><table><tr><th>Month</th><th>High Value</th><th>Loyal</th><th>At-Risk</th><th>Dormant</th><th>Active customers</th></tr><tr><td>2010-12</td><td class="n">£282,971</td><td class="n">£106,924</td><td class="n">£163,752</td><td class="n">£11,552</td><td class="n">884</td></tr><tr><td>2011-01</td><td class="n">£230,169</td><td class="n">£93,600</td><td class="n">£140,367</td><td class="n">£98,547</td><td class="n">739</td></tr><tr><td>2011-02</td><td class="n">£192,186</td><td class="n">£95,156</td><td class="n">£135,107</td><td class="n">£19,845</td><td class="n">757</td></tr><tr><td>2011-03</td><td class="n">£255,825</td><td class="n">£125,060</td><td class="n">£180,539</td><td class="n">£21,721</td><td class="n">973</td></tr><tr><td>2011-04</td><td class="n">£176,575</td><td class="n">£86,217</td><td class="n">£174,427</td><td class="n">£17,222</td><td class="n">853</td></tr><tr><td>2011-05</td><td class="n">£302,714</td><td class="n">£136,810</td><td class="n">£188,016</td><td class="n">£31,702</td><td class="n">1,054</td></tr><tr><td>2011-06</td><td class="n">£302,492</td><td class="n">£129,283</td><td class="n">£217,369</td><td class="n">£4,121</td><td class="n">990</td></tr><tr><td>2011-07</td><td class="n">£281,250</td><td class="n">£119,630</td><td class="n">£190,724</td><td class="n">£0</td><td class="n">946</td></tr><tr><td>2011-08</td><td class="n">£278,480</td><td class="n">£161,395</td><td class="n">£195,640</td><td class="n">£0</td><td class="n">933</td></tr><tr><td>2011-09</td><td class="n">£473,630</td><td class="n">£177,050</td><td class="n">£288,073</td><td class="n">£0</td><td class="n">1,259</td></tr><tr><td>2011-10</td><td class="n">£447,953</td><td class="n">£183,944</td><td class="n">£370,430</td><td class="n">£0</td><td class="n">1,361</td></tr><tr><td>2011-11</td><td class="n">£541,647</td><td class="n">£351,672</td><td class="n">£243,215</td><td class="n">£0</td><td class="n">1,661</td></tr><tr><td>2011-12</td><td class="n">£239,894</td><td class="n">£55,356</td><td class="n">£216,979</td><td class="n">£0</td><td class="n">614</td></tr></table></div></div></details>
+</div>
+</body></html>

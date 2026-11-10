@@ -1,5 +1,7 @@
 # Customer-Segmentation-Using-RFM-Analysis-in-E-Commerce
 
+**Live dashboard:** https://faizafham.github.io/Customer-Segmentation-Using-RFM-Analysis-E-Commerce/dashboard/
+
 📌 Project Overview
 
 E-commerce businesses generate vast amounts of transactional data but often fail to fully leverage it for actionable insights. The goal of this project is to segment customers using RFM (Recency, Frequency, Monetary) analysis to:
@@ -42,7 +44,7 @@ Country – Customer location
 
 Removed missing values in CustomerID (~25%)
 
-Dropped 5525 duplicate rows
+Dropped 5,225 duplicate rows
 
 Excluded cancelled orders (InvoiceNo starting with "C")
 
@@ -92,10 +94,12 @@ Dashboard (interactive visualization)
 PowerPoint Presentation for business insights- [Analysis](https://docs.google.com/presentation/d/1_kCWJfMuMT_DjQVXmGN-wETCHoTZhhiB/edit?usp=sharing&ouid=117160414401161637688&rtpof=true&sd=true)
 
 📂 Repository Structure
-📁 Ecommerce-Customer-Segmentation
-│── 📄 Ecommerce_Data_Analysis.ipynb     # Data cleaning, RFM analysis, segmentation
-│── 📄 dashboard/                        # Dashboard code/files
-│── 📄 README.md                         # Project documentation
+```
+├── Ecommerce_Data_Analysis.ipynb   # Data cleaning, RFM scoring, segmentation
+├── Ecommerce_Dashboard.pbix        # Power BI report (open in Power BI Desktop, Windows)
+├── dashboard/index.html            # Browser version of the Power BI page (live link above)
+└── README.md
+```
 
 📑 Presentation
 
